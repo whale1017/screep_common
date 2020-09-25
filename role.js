@@ -7,14 +7,14 @@ var ROLE_TYPE = {
 }
 
 module.exports  = {
-    run: function(creep) {
+    buildRole: function(creep) {
         var role
         if (creep.memory.type == 1){
             role = new CreepHarvester(creep)
         } else if (creep.memory.type == 2){
             role = new CreepUpgrader(creep)
         }
-        role.run()
+        return role
     },
     ROLE_TYPE: ROLE_TYPE,
     count: function(type) {
@@ -33,6 +33,22 @@ class CreepRole {
     constructor(creep) {
         this.creep = creep
     }
+    
+    isFree(){
+        var memoryActions = this.creep.memory.actions
+        return memoryActions == null || memoryActions.length==0
+    }
+
+    addAction(actions){
+        var memoryActions = this.creep.memory.actions
+        if (memoryActions == null){
+            this.creep.memory.actions = []
+        }
+        for (action in actions) {
+            this.creep.memory.actions.push(action)
+        }
+    }
+
     run() {
         console.log("CreepRole run, name:", this.creep.name)
     }
@@ -43,7 +59,21 @@ class CreepHarvester extends CreepRole {
         super(creep)
     }
     run() {
+
+        action.run()
+
+        var source = sources[0]
+        
+        var action = new GetEngineAction(source)
+
+        action.start(creep)
+        action.run()
+        if (action.done()) {
+
+        }
         var creep = this.creep
+        
+
         // console.log("CreepHarvester run", creep.name)
         if (creep.carry.energy < creep.carryCapacity) {
             var sources = creep.room.find(FIND_SOURCES);
@@ -67,21 +97,14 @@ class CreepUpgrader extends CreepRole {
         // console.log("CreepUpgrader run", creep.name)
         var sourceId = 1
         if (creep.carry.energy == 0) {
-
             var sources = creep.room.find(FIND_SOURCES);
-    
             if (creep.harvest(sources[sourceId]) == ERR_NOT_IN_RANGE) {
-    
                 creep.moveTo(sources[sourceId]);
-    
             }
-    
         }
         else if (creep.carry.energy >= 50) {
             if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-    
                 creep.moveTo(creep.room.controller);
-    
             }
         }
     
@@ -89,20 +112,13 @@ class CreepUpgrader extends CreepRole {
     
             //对控制器进行升级，如果不在范围则向控制器移动
             if (creep.upgradeController(creep.room.controller) != ERR_NOT_IN_RANGE) {
-    
                 return;
-    
             }
             var sources = creep.room.find(FIND_SOURCES);
-    
             if (creep.harvest(sources[sourceId]) != ERR_NOT_IN_RANGE) {
-    
                 return;
-    
             }
-    
             creep.moveTo(creep.room.controller);
-    
         }
     }
 }
