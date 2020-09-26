@@ -7,35 +7,6 @@ var ROLE_TYPE = {
     MOVER:3
 }
 
-module.exports  = {
-    run: function(creep, spawn) {
-        var role
-        if (creep.memory.type == 1){
-            role = new CreepHarvester(creep)
-        } else if (creep.memory.type == 2){
-            role = new CreepUpgrader(creep)
-        } else if (creep.memory.type == 3){
-            role = new CreepMover(creep, Game.spawns['Spawn1'])
-        } else if (creep.memory.type == 10){
-            role = new CreepPreDestory(creep)
-        } else {
-            console.log(creep.name)
-            return
-        }
-        role.run()
-    },
-    ROLE_TYPE: ROLE_TYPE,
-    count: function(type) {
-        var res = 0
-        for(var name in Game.creeps) {
-            var creep = Game.creeps[name];
-            if(creep.memory.type == type){
-                res = res+1
-            }
-        }
-        return res
-    }
-}
 
 class CreepRole {
     constructor(creep) {
@@ -53,14 +24,15 @@ class CreepHarvester extends CreepRole {
     run() {
         var creep = this.creep
         // console.log("CreepHarvester run", creep.name)
-        var target = this.containersWithEnergy()[0]
         // console.log("CreepRepair run", creep.name, JSON.stringify(target))
         var sources = creep.room.find(FIND_SOURCES);
+        sources.sort()
         var souceId = Math.abs(utils.getHashCode(creep.name) % 2)
-        // console.log("CreepHarvester run", creep.name, souceId)
-        var source = sources[souceId]
+        var source = sources[1-souceId]
         if (creep.carry.energy < creep.carryCapacity) {
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+
+                console.log("CreepHarvester run, ", creep.name, "move to", source.pos)
                 creep.moveTo(source);
             }
         } else {
@@ -188,5 +160,25 @@ class CreepPreDestory extends CreepRole {
         if (spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
             creep.moveTo(spawn)
         }
+    }
+}
+
+
+module.exports  = {
+    buildRole: function (creep, spawn){
+        if (creep.memory.type == 1){
+            role = new CreepHarvester(creep)
+        } else if (creep.memory.type == 2){
+            role = new CreepUpgrader(creep)
+        } else if (creep.memory.type == 3){
+            role = new CreepMover(creep, spawn)
+        } else if (creep.memory.type == 10){
+            role = new CreepPreDestory(creep)
+        } else {
+            console.log("assembleToRole failed", creep.name)
+            role = new CreepPreDestory(creep)
+            // return null
+        }
+        return role
     }
 }
