@@ -13,4 +13,4 @@ module.exports  = {
         }
         return  (hash & 0x7FFFFFFF);
     }
-} 
+}

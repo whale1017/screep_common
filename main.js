@@ -1,14 +1,15 @@
 var roleFactory = require('role_factory');
-var spawn = Game.spawns['Spawn1']
+var spawnName = "Spawn1"
 
 module.exports.loop = function () {
 
+    var spawn = Game.spawns[spawnName]
     // console.log("init factory")
     var sources = spawn.room.find(FIND_SOURCES);
     initMemory()
-    roleFactory.run()
-    for(var name in roleFactory.ROLE_MAP) {
-        var role = roleFactory.ROLE_MAP[name];
+    var factory = roleFactory.run(spawn)
+    for(var name in factory.ROLE_MAP) {
+        var role = factory.ROLE_MAP[name];
         role.run()
         // console.log("name run", name)
     }
