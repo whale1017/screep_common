@@ -24,20 +24,14 @@ function init(){
 }
 
 function initByMemory(){
-    for(name in Game.creeps){
-        if(ROLE_MAP[name]){
-            break
-        }
+    for(name in ROLE_MAP){
+        delete ROLE_MAP[name]
+    }
 
+    for(name in Game.creeps){
         var creep = Game.creeps[name]
         role = roleClass.buildRole(creep, spawn)
         ROLE_MAP[name] = role
-    }
-
-    for(name in ROLE_MAP){
-        if(!Game.creeps[name]){
-            delete ROLE_MAP[name]
-        }
     }
     
 }
