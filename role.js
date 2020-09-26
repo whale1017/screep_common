@@ -1,20 +1,25 @@
 const { map } = require("lodash")
+var utils = require('utils');
 
 var ROLE_TYPE = {
     'HARVESTER':1,
     'UPGRADER':2,
-    'BUILDER':3
+    'MOVER':3
 }
 
 module.exports  = {
-    buildRole: function(creep) {
+    run: function(creep, spawn) {
         var role
         if (creep.memory.type == 1){
             role = new CreepHarvester(creep)
         } else if (creep.memory.type == 2){
             role = new CreepUpgrader(creep)
+        } else if (creep.memory.type == 3){
+            role = new CreepMover(creep, Game.spawns['Spawn1'])
+        } else if (creep.memory.type == 10){
+            role = new CreepPreDestory(creep)
         }
-        return role
+        role.run()
     },
     ROLE_TYPE: ROLE_TYPE,
     count: function(type) {
@@ -33,22 +38,6 @@ class CreepRole {
     constructor(creep) {
         this.creep = creep
     }
-    
-    isFree(){
-        var memoryActions = this.creep.memory.actions
-        return memoryActions == null || memoryActions.length==0
-    }
-
-    addAction(actions){
-        var memoryActions = this.creep.memory.actions
-        if (memoryActions == null){
-            this.creep.memory.actions = []
-        }
-        for (action in actions) {
-            this.creep.memory.actions.push(action)
-        }
-    }
-
     run() {
         console.log("CreepRole run, name:", this.creep.name)
     }
@@ -59,32 +48,32 @@ class CreepHarvester extends CreepRole {
         super(creep)
     }
     run() {
-
-        action.run()
-
-        var source = sources[0]
-        
-        var action = new GetEngineAction(source)
-
-        action.start(creep)
-        action.run()
-        if (action.done()) {
-
-        }
         var creep = this.creep
-        
-
         // console.log("CreepHarvester run", creep.name)
+        var target = this.containersWithEnergy()[0]
+        // console.log("CreepRepair run", creep.name, JSON.stringify(target))
+        var sources = creep.room.find(FIND_SOURCES);
+        var souceId = Math.abs(utils.getHashCode(creep.name) % 2)
+        // console.log("CreepHarvester run", creep.name, souceId)
+        var source = sources[souceId]
         if (creep.carry.energy < creep.carryCapacity) {
-            var sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0]);
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(source);
             }
         } else {
-            if (creep.transfer(Game.spawns['Hom'], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(Game.spawns['Hom']);
-            }
+            creep.drop(RESOURCE_ENERGY);
         }
+    }
+
+
+    containersWithEnergy(){
+        const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+            {
+                filter: (i) => i.structureType == STRUCTURE_CONTAINER //&& i.store[RESOURCE_ENERGY] > 0
+            }
+        )
+            ;
+        return containersWithEnergy
     }
 }
 
@@ -95,51 +84,106 @@ class CreepUpgrader extends CreepRole {
     run() {
         var creep = this.creep
         // console.log("CreepUpgrader run", creep.name)
-        var sourceId = 1
-        if (creep.carry.energy == 0) {
-            var sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[sourceId]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[sourceId]);
+
+        var store = creep.store
+
+
+        if (store.energy == 0) {
+
+            const targetEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
+            if(targetEnergy) {
+                if(creep.pickup(targetEnergy) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(targetEnergy);
+                }
             }
-        }
-        else if (creep.carry.energy >= 50) {
-            if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.controller);
-            }
-        }
     
-        else {
+        } else if (store.energy >= store.getCapacity()) {
+            if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+    
+                creep.moveTo(creep.room.controller);
+    
+            }
+        } else {
     
             //对控制器进行升级，如果不在范围则向控制器移动
             if (creep.upgradeController(creep.room.controller) != ERR_NOT_IN_RANGE) {
                 return;
             }
-            var sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[sourceId]) != ERR_NOT_IN_RANGE) {
-                return;
+    
+            const targetEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
+            if(targetEnergy) {
+                if(creep.pickup(targetEnergy) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(targetEnergy);
+                    return
+                }
             }
-            creep.moveTo(creep.room.controller);
+
+            creep.moveTo(creep.room.controller);    
         }
     }
 }
 
-class CreepBuilder extends CreepRole {
+class CreepRepair extends CreepRole {
     constructor(creep) {
         super(creep)
     }
     run() {
         var creep = this.creep
-        console.log("CreepBuilder run", creep.name)
+        // console.log("CreepRepair run", creep.name)
+        var target = this.containersWithEnergy()[0]
+        // console.log("CreepRepair run", creep.name, JSON.stringify(target))
+        var sources = creep.room.find(FIND_SOURCES);
+        var source = sources[0]
         if (creep.carry.energy < creep.carryCapacity) {
-            var sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0]);
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(source);
+            }
+        } else {
+            if (creep.repair(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
             }
         }
-        else {
-            if (creep.transfer(Game.spawns['Hom'], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(Game.spawns['Hom']);
+    }
+}
+
+
+class CreepMover extends CreepRole {
+    constructor(creep, target) {
+        super(creep)
+        this.target = target
+    }
+    run() {
+        var creep = this.creep
+        // console.log("CreepRepair run", creep.name)
+        var target = this.target
+        var store = creep.store
+        if (store.energy < store.getCapacity()) {
+            const targetEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
+            if(targetEnergy) {
+                if(creep.pickup(targetEnergy) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(targetEnergy);
+                }
             }
+        } else {
+            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
+            }
+        }
+    }
+}
+
+
+class CreepPreDestory extends CreepRole {
+    constructor(creep) {
+        super(creep)
+    }
+    run() {
+        var creep = this.creep
+        // console.log("CreepRepair run", creep.name)
+        var spawn = Game.spawns['Spawn1']
+
+        if (spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(spawn)
         }
     }
 }
