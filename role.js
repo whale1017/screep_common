@@ -2,9 +2,9 @@ const { map } = require("lodash")
 var utils = require('utils');
 
 var ROLE_TYPE = {
-    'HARVESTER':1,
-    'UPGRADER':2,
-    'MOVER':3
+    HARVESTER:1,
+    UPGRADER:2,
+    MOVER:3
 }
 
 module.exports  = {
