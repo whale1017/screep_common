@@ -21,9 +21,9 @@ module.exports.loop = function () {
             return
         }
 
-        var harvesterCount = role.count(role.ROLE_TYPE['HARVESTER'])
-        var moverCount = role.count(role.ROLE_TYPE['MOVER'])
-        var upgraderCount = role.count(role.ROLE_TYPE['UPGRADER'])
+        var harvesterCount = role.count(role.ROLE_TYPE.HARVESTER)
+        var moverCount = role.count(role.ROLE_TYPE.MOVER)
+        var upgraderCount = role.count(role.ROLE_TYPE.UPGRADER)
         // var upgraderCount = role.count(role.ROLE_TYPE['UPGRADER'])
         // console.log("harvesterCount:", harvesterCount, ", ", "upgraderCount:", upgraderCount)
         // Game.spawns['Spawn1'].spawnCreep( [WORK, CARRY, WORK, MOVE], "REPAIR-"+"3", {memory:{type:10}} );

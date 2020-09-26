@@ -18,6 +18,9 @@ module.exports  = {
             role = new CreepMover(creep, Game.spawns['Spawn1'])
         } else if (creep.memory.type == 10){
             role = new CreepPreDestory(creep)
+        } else {
+            console.log(creep.name)
+            return
         }
         role.run()
     },
