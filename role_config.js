@@ -31,7 +31,7 @@ class RoleConfig {
 }
 
 var ROLE_CONFIG = {
-    HARVESTER: new RoleConfig(1, [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE], 100, {max:2, min:1}, "HARVESTER"),
+    HARVESTER: new RoleConfig(1, [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE], 100, {max:3, min:1}, "HARVESTER"),
     UPGRADER: new RoleConfig(2, [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 10, {max: 6, min:1}, "UPGRADER"),
     COLLECTOR: new RoleConfig(3, [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE], 90, {max: 2, min:1}, "COLLECTOR"),
     REPAIR: new RoleConfig(4, [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 10, {max: 1, min:1}, "REPAIR"),

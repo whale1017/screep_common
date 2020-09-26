@@ -32,8 +32,8 @@ class CreepHarvester extends CreepRole {
         // console.log("CreepRepair run", creep.name, JSON.stringify(target))
         var sources = creep.room.find(FIND_SOURCES_ACTIVE);
         sources = sources.sort()
-        var souceId = Math.abs(utils.getHashCode(creep.name) % 2)
-        var source = sources[1-souceId]
+        var souceId = Math.abs(utils.getHashCode(creep.name) % sources.length)
+        var source = sources[souceId]
         var res = creep.harvest(source)
         if (res == ERR_NOT_IN_RANGE) {
             // console.log("CreepHarvester run, ", creep.name, "move to", source.pos)
