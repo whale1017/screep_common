@@ -46,6 +46,12 @@ class CreepHarvester extends CreepRole {
 class CreepUpgrader extends CreepRole {
     constructor(creep) {
         super(creep)
+
+        var memStatus = creep.memory.status
+        if (memStatus == null){
+            creep.memory.status = 0 // 0-初始， 1-获取， 2-工作
+        }
+        this.status = creep.memory.status  
     }
     run() {
         var creep = this.creep
@@ -53,41 +59,77 @@ class CreepUpgrader extends CreepRole {
 
         var done = false
         var store = creep.store
-        if (store.energy == 0) {
+        // if (store.energy == 0) {
 
+        //     var containers = this.containersWithEnergy()
+        //     var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
+        //     var from = containers[index]
+        //     if(from) {
+        //         if(creep.withdraw(from, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        //             creep.moveTo(from);
+        //         }
+        //         done = true
+        //     }
+        // } else {
+        //     if (store.energy < store.getCapacity()) {
+        //         var containers = this.containersWithEnergy()
+        //         var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
+        //         var from = containers[index]
+        //         if(from) {
+        //             var res = creep.withdraw(from, RESOURCE_ENERGY)
+        //             // console.log(res)
+        //             if(res == OK) {
+        //                 done = true
+        //                 return
+        //             }
+        //         }
+        //     }
+            
+        //     if (creep.upgradeController(creep.room.controller) != ERR_NOT_IN_RANGE) {
+        //         done = true
+        //         return
+        //     } else {
+        //         creep.moveTo(creep.room.controller)
+        //         done = true
+        //     }
+
+        // }
+        
+        if(this.status == 0){
+            this.changeStatus(1)
+        }
+
+        if(store.energy == 0){
+            creep.say('empty')
+            this.changeStatus(1)
+        } else if (store.energy == store.getCapacity()) {
+            creep.say('full')
+            this.changeStatus(2)
+        } else {
+            creep.say(store.energy + '/' + store.getCapacity())
+        }
+
+        if (this.status == 1){
             var containers = this.containersWithEnergy()
             var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
             var from = containers[index]
             if(from) {
                 if(creep.withdraw(from, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(from);
-                }
-                done = true
-            }
-        } else {
-            if (store.energy < store.getCapacity()) {
-                var containers = this.containersWithEnergy()
-                var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
-                var from = containers[index]
-                if(from) {
-                    var res = creep.withdraw(from, RESOURCE_ENERGY)
-                    // console.log(res)
-                    if(res == OK) {
-                        done = true
-                        return
-                    }
+                    return
                 }
             }
+        } else if (this.status == 2){
             
-            if (creep.upgradeController(creep.room.controller) != ERR_NOT_IN_RANGE) {
-                done = true
-                return
-            } else {
+            var res = creep.upgradeController(creep.room.controller)
+            if (res == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.controller)
-                done = true
+                return;
+            } else if (res == OK) {
+                return
             }
-
         }
+        creep.say("error")
     }
 
 
@@ -122,9 +164,13 @@ class CreepRepair extends CreepRole {
         }
 
         if(store.energy == 0){
+            creep.say('empty')
             this.changeStatus(1)
         } else if (store.energy == store.getCapacity()) {
+            creep.say('full')
             this.changeStatus(2)
+        } else {
+            creep.say(store.energy + '/' + store.getCapacity())
         }
 
 
@@ -208,7 +254,7 @@ class CreepCollector extends CreepRole {
             const targetEnergy = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES,
                 {
                     filter: function(obj) {
-                        return obj.resourceType == RESOURCE_ENERGY && obj.amount > 50
+                        return obj.resourceType == RESOURCE_ENERGY// && obj.amount > 50
                     }
                 });
             if(targetEnergy) {
@@ -226,7 +272,7 @@ class CreepCollector extends CreepRole {
     getTargetEnergy(creep){
         var resources = creep.room.find(FIND_DROPPED_RESOURCES,{
             filter: function(obj) {
-                return obj.resourceType == RESOURCE_ENERGY && obj.amount > 50
+                return obj.resourceType == RESOURCE_ENERGY //&& obj.amount > 50
             }
         });
 
@@ -251,7 +297,7 @@ class CreepCollector extends CreepRole {
     containersWithEnergy(){
         const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
-                filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] < i.store.getCapacity()
+                filter: (i) => i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE && i.store[RESOURCE_ENERGY] < i.store.getCapacity()
             }
         );
         return containersWithEnergy
@@ -288,9 +334,13 @@ class CreepMover extends CreepRole {
         }
 
         if(store.energy == 0){
+            creep.say('empty')
             this.changeStatus(1)
         } else if (store.energy == store.getCapacity()) {
+            creep.say('full')
             this.changeStatus(2)
+        } else {
+            creep.say(store.energy + '/' + store.getCapacity())
         }
 
 
@@ -322,14 +372,34 @@ class CreepMover extends CreepRole {
     }
 
     getTargetList(creep){
-        const target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+        var target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
             filter: function(object) {
                 // if ((object.structureType == STRUCTURE_EXTENSION || object.structureType == STRUCTURE_SPAWN)){
                 //     console.log(object.name, object.structureType, object.store.energy, object.store.getCapacity(RESOURCE_ENERGY))
                 // }
-                return (object.structureType == STRUCTURE_EXTENSION || object.structureType == STRUCTURE_SPAWN || object.structureType == STRUCTURE_TOWER) && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0 //object.store.energy < object.store.getCapacity();
+                return (object.structureType == STRUCTURE_EXTENSION 
+                    || object.structureType == STRUCTURE_SPAWN 
+                    // || object.structureType == STRUCTURE_TOWER
+                    ) 
+                    && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0 //object.store.energy < object.store.getCapacity();
             }
         });
+        if (target != null){
+            return target
+        }
+
+        target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+            filter: function(object) {
+                // if ((object.structureType == STRUCTURE_EXTENSION || object.structureType == STRUCTURE_SPAWN)){
+                //     console.log(object.name, object.structureType, object.store.energy, object.store.getCapacity(RESOURCE_ENERGY))
+                // }
+                return (
+                    object.structureType == STRUCTURE_TOWER
+                    ) 
+                    && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0 //object.store.energy < object.store.getCapacity();
+            }
+        });
+
         return target
     }
 }
@@ -355,6 +425,12 @@ class TowerRole {
         this.tower = tower
     }
     run() {
+        var attackTarget = this.getAttackTarget()
+        if (attackTarget) {
+            this.tower.attack(attackTarget)
+            return
+        }
+
         const targets = this.tower.room.find(FIND_STRUCTURES, {
             filter: object => object.hits < object.hitsMax
         });
@@ -364,30 +440,27 @@ class TowerRole {
             var res = this.tower.repair(targets[0])
             if(res != OK) {
                 console.log("TowerRole - run repair failed")
+            } else {
+                return
             }
         }
+    }
+
+    getAttackTarget(){
+        for(var name in Game.creeps){
+            var creep = Game.creeps[name]
+            if(!creep.my){
+                return creep
+            }
+            // if (name == 'REPAIR-TmRMm') {
+            //     return creep
+            // }
+        }
+        return null
     }
 }
 
 module.exports  = {
-    // buildRole: function (creep, spawn){
-    //     if (creep.memory.type == 1){
-    //         role = new CreepHarvester(creep)
-    //     } else if (creep.memory.type == 2){
-    //         role = new CreepUpgrader(creep)
-    //     } else if (creep.memory.type == 3){
-    //         role = new CreepCollector(creep, spawn)
-    //     } else if (creep.memory.type == 4){
-    //         role = new CreepRepair(creep)
-    //     } else if (creep.memory.type == 10){
-    //         role = new CreepPreDestory(creep)
-    //     } else {
-    //         console.log("assembleToRole failed", creep.name)
-    //         role = new CreepPreDestory(creep)
-    //         // return null
-    //     }
-    //     return role
-    // },
     buildHarvester: function(creep){return new CreepHarvester(creep)},
     buildUpgrader: function(creep){return new CreepUpgrader(creep)},
     buildCollector: function(creep, target){return new CreepCollector(creep, target)},

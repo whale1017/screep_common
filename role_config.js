@@ -31,11 +31,15 @@ class RoleConfig {
 }
 
 var ROLE_CONFIG = {
-    HARVESTER: new RoleConfig(1, [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE], 100, {max:3, min:1}, "HARVESTER"),
-    UPGRADER: new RoleConfig(2, [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], 10, {max: 6, min:1}, "UPGRADER"),
+    HARVESTER: new RoleConfig(1, [WORK, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE, MOVE, MOVE], 100, {max:2, min:1}, "HARVESTER"),
+    UPGRADER: new RoleConfig(2, [WORK, CARRY, MOVE, MOVE], 10, {max: 1, min:1}, "UPGRADER"),
     COLLECTOR: new RoleConfig(3, [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE], 90, {max: 2, min:1}, "COLLECTOR"),
-    REPAIR: new RoleConfig(4, [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 10, {max: 1, min:1}, "REPAIR"),
+    REPAIR: new RoleConfig(4, [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE], 50, {max: 1, min:0}, "REPAIR"),
     MOVER: new RoleConfig(5, [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE], 200, {max: 2, min:1}, "MOVER"),
+    
+    MINI_MOVER: new RoleConfig(6, [CARRY, MOVE], 300, {max: 2, min:1}, "MINI_MOVER"),
+    MINI_COLLECTOR: new RoleConfig(7, [CARRY, MOVE], 300, {max: 2, min:1}, "MINI_COLLECTOR"),
+    MINI_HARVESTER: new RoleConfig(8, [WORK, MOVE], 300, {max:2, min:1}, "MINI_HARVESTER"), 
 }
 
 module.exports  = {
