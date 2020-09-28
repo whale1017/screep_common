@@ -33,8 +33,10 @@ class RoleFactor{
             this.ROLE_MAP[tower.id] = role
             // console.log("RoleFactor - initByMemory", name)
         }
-    }
 
+        // Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {filter: (obj) => obj.structureTyp == STRUCTURE_TOWER})[0].attack(Game.creeps['MINI_COLLECTOR-5mXjM'])
+    }
+    
     assembleToRole(creep, spawn){
         var role
         if (creep.memory.type == 1 || creep.memory.type == 8){
@@ -47,6 +49,8 @@ class RoleFactor{
             role = roleClass.buildRepair(creep)
         } else if (creep.memory.type == 5 || creep.memory.type == 6){
             role = roleClass.buildMover(creep, null, null)
+        } else if (creep.memory.type == 100){
+            role = roleClass.buildAttacker(creep)
         } else if (creep.memory.type == 10){
             role = roleClass.buildPreDestory(creep)
         } else {
@@ -63,19 +67,26 @@ class RoleFactor{
         return role
     }
 
-    buildRole(config){
+    buildRole(roleConfig){
         var spawn = this.spawn
         // console.log(spawn.spawning, spawn.room.energyAvailable, config.buildEnergy)
-        if (spawn.room.energyAvailable >= config.buildEnergy) {
+        if (spawn.room.energyAvailable >= roleConfig.buildEnergy) {
             if (spawn.spawning == null ){
                 var name = utils.randomString(5)
-                var fullName = config.prefix + "-" + name
+                var fullName = roleConfig.prefix + "-" + name
+                var targeRoomName
+                if (roleConfig.targetRoomName != null ) {
+                    targeRoomName = roleConfig.targetRoomName
+                } else {
+                    targeRoomName = "UN_DEFINED"
+                }
                 spawn.spawnCreep(
-                    config.body,
+                    roleConfig.body,
                     fullName,
                     {
                         memory:{
-                            type:config.type
+                            type: roleConfig.type,
+                            targetRoomName: targeRoomName
                         }
                     }
                 );
