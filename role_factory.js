@@ -20,7 +20,6 @@ class RoleFactor{
             var creep = Game.creeps[name]
             var role = this.assembleToRole(creep, spawn)
             this.ROLE_MAP[name] = role
-            // console.log("RoleFactor - initByMemory", name)
         }
         var towers = spawn.room.find(FIND_MY_STRUCTURES, {
             filter: function(obj) {
@@ -31,10 +30,8 @@ class RoleFactor{
             var tower = towers[index]
             var role = this.assembleToTower(tower)
             this.ROLE_MAP[tower.id] = role
-            // console.log("RoleFactor - initByMemory", name)
         }
 
-        // Game.spawns['Spawn1'].room.find(FIND_MY_STRUCTURES, {filter: (obj) => obj.structureTyp == STRUCTURE_TOWER})[0].attack(Game.creeps['MINI_COLLECTOR-5mXjM'])
     }
     
     assembleToRole(creep, spawn){
@@ -117,12 +114,9 @@ class RoleFactor{
             return b[1].level - a[1].level}
         )
         var key,value
-        // console.log(entries)
         for ([key, value] of entries){
             var config = value
-            // console.log(value)
             var count = this.countRole(config.type)
-            // console.log("minSize", config.sizeRange.min, count)
             if(config.sizeRange.min > count && this.buildRole(config)){
                 return
             }
