@@ -37,19 +37,19 @@ class RoleFactor{
     
     assembleToRole(creep, spawn){
         var role
-        if (creep.memory.type == 1 || creep.memory.type == 8){
+        if (creep.memory.type == 1 || creep.memory.type == 10 || creep.memory.type == 1000){
             role = new CreepHarvester(creep)
             // role = roleClass.buildHarvester(creep)
-        } else if (creep.memory.type == 2 || creep.memory.type == 22){
+        } else if (creep.memory.type == 2 || creep.memory.type == 20 || creep.memory.type == 2000){
             // role = roleClass.buildUpgrader(creep)
             role = new CreepUpgrader(creep)
-        } else if (creep.memory.type == 3 || creep.memory.type == 7){
+        } else if (creep.memory.type == 3 || creep.memory.type == 30 || creep.memory.type == 3000){
             // role = roleClass.buildCollector(creep)
             role = new CreepCollector(creep)
-        } else if (creep.memory.type == 4){
+        } else if (creep.memory.type == 4 || creep.memory.type == 40 || creep.memory.type == 4000){
             // role = roleClass.buildRepair(creep)
             role = new CreepRepair(creep)
-        } else if (creep.memory.type == 5 || creep.memory.type == 6){
+        } else if (creep.memory.type == 5 || creep.memory.type == 50 || creep.memory.type == 5000){
             // role = roleClass.buildMover(creep, null, null)
             role = new CreepMover(creep, null, null)
         } else if (creep.memory.type == 100){

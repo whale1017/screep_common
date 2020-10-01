@@ -134,9 +134,17 @@ class CreepUpgrader extends CreepRole {
 
 
     containersWithEnergy(){
-        const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+        var containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
-                filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0
+                filter: (i) => (i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0
+            }
+        );
+        if (containersWithEnergy.length>0) {
+            return containersWithEnergy
+        }
+        containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+            {
+                filter: (i) => (i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] > 0
             }
         );
         return containersWithEnergy
@@ -173,15 +181,12 @@ class CreepRepair extends CreepRole {
         }
 
 
-        
-        const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
-
         if (this.status == 1) {
 
             var containers = this.containersWithEnergy()
             var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
             var from = containers[index]
-            console.log("CreepRepair run", containers.length)
+            // console.log("CreepRepair run", containers.length)
             if(from) {
                 var res = creep.withdraw(from, RESOURCE_ENERGY)
                 if(res == ERR_NOT_IN_RANGE) {
@@ -192,13 +197,18 @@ class CreepRepair extends CreepRole {
                 }
             }
         } else if (this.status == 2) {
-            if (target) {
-                var res = creep.build(target)
-                if (res == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target)
-                    return;
-                } else if (res == OK) {
-                    return
+            var buildTargets = creep.room.find(FIND_CONSTRUCTION_SITES);
+            buildTargets=buildTargets.sort()
+            if (buildTargets.length >0){
+                const target = buildTargets[0];
+                if (target) {
+                    var res = creep.build(target)
+                    if (res == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target)
+                        return;
+                    } else if (res == OK) {
+                        return
+                    }
                 }
             }
 
@@ -221,9 +231,18 @@ class CreepRepair extends CreepRole {
     }
 
     containersWithEnergy(){
-        const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+        var containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
                 filter: (i) => (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE) && i.store[RESOURCE_ENERGY] > 0
+            }
+        );
+        if(containersWithEnergy.length > 0){
+            return containersWithEnergy
+        }
+
+        containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+            {
+                filter: (i) => (i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] > 0
             }
         );
         return containersWithEnergy
@@ -240,6 +259,8 @@ class CreepCollector extends CreepRole {
     run() {
         var creep = this.creep
         // console.log("CreepRepair run", creep.name)
+        var store = creep.store
+        creep.say(store.energy + '/' + store.getCapacity())
         var target
         if (this.target != null) {
             target = this.target
@@ -311,7 +332,7 @@ class CreepCollector extends CreepRole {
             {
                 
                 filter: (i) => {
-                    return (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE) && i.store[RESOURCE_ENERGY] < i.store.getCapacity()
+                    return (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] < i.store.getCapacity(RESOURCE_ENERGY)
                 }
             }
         );
