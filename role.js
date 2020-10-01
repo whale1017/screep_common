@@ -155,7 +155,6 @@ class CreepRepair extends CreepRole {
     }
     run() {
         var creep = this.creep
-        // console.log("CreepRepair run", creep.name)
         var store = creep.store
 
 
@@ -182,6 +181,7 @@ class CreepRepair extends CreepRole {
             var containers = this.containersWithEnergy()
             var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
             var from = containers[index]
+            console.log("CreepRepair run", containers.length)
             if(from) {
                 var res = creep.withdraw(from, RESOURCE_ENERGY)
                 if(res == ERR_NOT_IN_RANGE) {
@@ -223,7 +223,7 @@ class CreepRepair extends CreepRole {
     containersWithEnergy(){
         const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
-                filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0
+                filter: (i) => (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE) && i.store[RESOURCE_ENERGY] > 0
             }
         );
         return containersWithEnergy
@@ -528,9 +528,6 @@ class TowerRole {
         this.tower = tower
     }
     run() {
-        if(this.tower.store[RESOURCE_ENERGY] < this.tower.store.getCapacity(RESOURCE_ENERGY) / 2){
-            return
-        }
         var attackTarget = this.getAttackTarget()
         // console.log(attackTarget)
         if (attackTarget) {
@@ -538,6 +535,9 @@ class TowerRole {
             return
         }
 
+        if(this.tower.store[RESOURCE_ENERGY] < this.tower.store.getCapacity(RESOURCE_ENERGY) / 2){
+            return
+        }
         const targets = this.tower.room.find(FIND_STRUCTURES, {
             filter: object => (object.hits < object.hitsMax && object.hits < 10000 && object.structureType)
         });
@@ -567,13 +567,21 @@ class TowerRole {
 }
 
 module.exports  = {
-    buildHarvester: function(creep){return new CreepHarvester(creep)},
-    buildUpgrader: function(creep){return new CreepUpgrader(creep)},
-    buildCollector: function(creep, target){return new CreepCollector(creep, target)},
-    buildRepair: function(creep){return new CreepRepair(creep)},
-    buildPreDestory: function(creep) {return new CreepPreDestory(creep)},
-    buildMover: function(creep, from, target){return new CreepMover(creep, from, target)},
-    buildAttacker: function(creep){return new CreepAttacker(creep)},
+    // buildHarvester: function(creep){return new CreepHarvester(creep)},
+    // buildUpgrader: function(creep){return new CreepUpgrader(creep)},
+    // buildCollector: function(creep, target){return new CreepCollector(creep, target)},
+    // buildRepair: function(creep){return new CreepRepair(creep)},
+    // buildPreDestory: function(creep) {return new CreepPreDestory(creep)},
+    // buildMover: function(creep, from, target){return new CreepMover(creep, from, target)},
+    // buildAttacker: function(creep){return new CreepAttacker(creep)},
+    // buildTower: function(tower){return new TowerRole(tower)},
 
-    buildTower: function(tower){return new TowerRole(tower)},
+    CreepHarvester,
+    CreepUpgrader,
+    CreepCollector,
+    CreepRepair,
+    CreepPreDestory,
+    CreepMover,
+    CreepAttacker,
+    TowerRole,
 }

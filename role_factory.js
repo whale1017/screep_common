@@ -2,6 +2,7 @@ const { initial, filter } = require('lodash');
 var roleConfig = require('role_config');
 var roleClass = require('role');
 var utils = require('utils');
+const { CreepHarvester, CreepUpgrader, CreepCollector, CreepRepair, CreepAttacker, CreepMover, CreepPreDestory, TowerRole } = require('role');
 
 class RoleFactor{
     constructor(spawn){
@@ -37,19 +38,26 @@ class RoleFactor{
     assembleToRole(creep, spawn){
         var role
         if (creep.memory.type == 1 || creep.memory.type == 8){
-            role = roleClass.buildHarvester(creep)
-        } else if (creep.memory.type == 2){
-            role = roleClass.buildUpgrader(creep)
+            role = new CreepHarvester(creep)
+            // role = roleClass.buildHarvester(creep)
+        } else if (creep.memory.type == 2 || creep.memory.type == 22){
+            // role = roleClass.buildUpgrader(creep)
+            role = new CreepUpgrader(creep)
         } else if (creep.memory.type == 3 || creep.memory.type == 7){
-            role = roleClass.buildCollector(creep)
+            // role = roleClass.buildCollector(creep)
+            role = new CreepCollector(creep)
         } else if (creep.memory.type == 4){
-            role = roleClass.buildRepair(creep)
+            // role = roleClass.buildRepair(creep)
+            role = new CreepRepair(creep)
         } else if (creep.memory.type == 5 || creep.memory.type == 6){
-            role = roleClass.buildMover(creep, null, null)
+            // role = roleClass.buildMover(creep, null, null)
+            role = new CreepMover(creep, null, null)
         } else if (creep.memory.type == 100){
-            role = roleClass.buildAttacker(creep)
+            // role = roleClass.buildAttacker(creep)
+            role = new CreepAttacker(creep)
         } else if (creep.memory.type == 10){
-            role = roleClass.buildPreDestory(creep)
+            // role = roleClass.buildPreDestory(creep)
+            role = new CreepPreDestory(creep)
         } else {
             console.log("assembleToRole failed", creep.name)
             role = new CreepPreDestory(creep)
@@ -60,7 +68,7 @@ class RoleFactor{
 
 
     assembleToTower(tower){
-        var role = roleClass.buildTower(tower)
+        var role = new TowerRole(tower)
         return role
     }
 
