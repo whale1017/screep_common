@@ -56,7 +56,9 @@ class CreepUpgrader extends CreepRole {
     run() {
         var creep = this.creep
         // console.log("CreepUpgrader run", creep.name)
-
+        if (creep.room.controller.level > 6){
+            return
+        }
         var done = false
         var store = creep.store
         // if (store.energy == 0) {
@@ -134,17 +136,9 @@ class CreepUpgrader extends CreepRole {
 
 
     containersWithEnergy(){
-        var containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+        const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
-                filter: (i) => (i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0
-            }
-        );
-        if (containersWithEnergy.length>0) {
-            return containersWithEnergy
-        }
-        containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
-            {
-                filter: (i) => (i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] > 0
+                filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0
             }
         );
         return containersWithEnergy
@@ -181,12 +175,15 @@ class CreepRepair extends CreepRole {
         }
 
 
+        
+        const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+
         if (this.status == 1) {
 
             var containers = this.containersWithEnergy()
             var index = Math.abs(utils.getHashCode(creep.name) % containers.length)
             var from = containers[index]
-            // console.log("CreepRepair run", containers.length)
+            console.log("CreepRepair run", containers.length)
             if(from) {
                 var res = creep.withdraw(from, RESOURCE_ENERGY)
                 if(res == ERR_NOT_IN_RANGE) {
@@ -197,18 +194,13 @@ class CreepRepair extends CreepRole {
                 }
             }
         } else if (this.status == 2) {
-            var buildTargets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            buildTargets=buildTargets.sort()
-            if (buildTargets.length >0){
-                const target = buildTargets[0];
-                if (target) {
-                    var res = creep.build(target)
-                    if (res == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target)
-                        return;
-                    } else if (res == OK) {
-                        return
-                    }
+            if (target) {
+                var res = creep.build(target)
+                if (res == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target)
+                    return;
+                } else if (res == OK) {
+                    return
                 }
             }
 
@@ -231,18 +223,9 @@ class CreepRepair extends CreepRole {
     }
 
     containersWithEnergy(){
-        var containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
+        const containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
             {
                 filter: (i) => (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE) && i.store[RESOURCE_ENERGY] > 0
-            }
-        );
-        if(containersWithEnergy.length > 0){
-            return containersWithEnergy
-        }
-
-        containersWithEnergy = this.creep.room.find(FIND_STRUCTURES, 
-            {
-                filter: (i) => (i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] > 0
             }
         );
         return containersWithEnergy
@@ -259,8 +242,6 @@ class CreepCollector extends CreepRole {
     run() {
         var creep = this.creep
         // console.log("CreepRepair run", creep.name)
-        var store = creep.store
-        creep.say(store.energy + '/' + store.getCapacity())
         var target
         if (this.target != null) {
             target = this.target
@@ -332,7 +313,7 @@ class CreepCollector extends CreepRole {
             {
                 
                 filter: (i) => {
-                    return (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_SPAWN) && i.store[RESOURCE_ENERGY] < i.store.getCapacity(RESOURCE_ENERGY)
+                    return (i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE) && i.store[RESOURCE_ENERGY] < i.store.getCapacity()
                 }
             }
         );
@@ -427,7 +408,22 @@ class CreepMover extends CreepRole {
         }
 
 
-        target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+        // target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+        //     filter: function(object) {
+        //         // if ((object.structureType == STRUCTURE_EXTENSION || object.structureType == STRUCTURE_SPAWN)){
+        //         //     console.log(object.name, object.structureType, object.store.energy, object.store.getCapacity(RESOURCE_ENERGY))
+        //         // }
+        //         return (
+        //             object.structureType == STRUCTURE_TOWER
+        //             ) 
+        //             && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0 //object.store.energy < object.store.getCapacity();
+        //     }
+        // });
+        // if (target != null){
+        //     return target
+        // }
+
+        var targetList = creep.room.find(FIND_MY_STRUCTURES, {
             filter: function(object) {
                 // if ((object.structureType == STRUCTURE_EXTENSION || object.structureType == STRUCTURE_SPAWN)){
                 //     console.log(object.name, object.structureType, object.store.energy, object.store.getCapacity(RESOURCE_ENERGY))
@@ -438,12 +434,13 @@ class CreepMover extends CreepRole {
                     && object.store.getFreeCapacity(RESOURCE_ENERGY) > 0 //object.store.energy < object.store.getCapacity();
             }
         });
-        if (target != null){
+        targetList = targetList.sort()
+        if (targetList.length <= 0){
             return target
         }
-
-
-        return target
+        
+        var targetId = Math.abs(utils.getHashCode(creep.name) % targetList.length)
+        return targetList[targetId]
     }
 }
 
@@ -560,7 +557,7 @@ class TowerRole {
             return
         }
         const targets = this.tower.room.find(FIND_STRUCTURES, {
-            filter: object => (object.hits < object.hitsMax && object.hits < 10000 && object.structureType)
+            filter: object => (object.hits < object.hitsMax && object.hits < 1*1000*1000 && object.structureType)
         });
 
         targets.sort((a,b) => a.hits - b.hits);
