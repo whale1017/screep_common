@@ -11,6 +11,7 @@ var ROLE_TYPE = {
 class CreepRole {
     constructor(creep) {
         this.creep = creep
+        this.isSay = false
     }
     run() {
         console.log("CreepRole run, name:", this.creep.name)
@@ -19,6 +20,12 @@ class CreepRole {
     changeStatus(status){
         this.status = status
         this.creep.memory.status = status
+    }
+
+    creepSay(content){
+        if(this.isSay){
+            this.creep.say(content)
+        }
     }
 }
 
@@ -102,13 +109,13 @@ class CreepUpgrader extends CreepRole {
         }
 
         if(store.energy == 0){
-            creep.say('empty')
+            this.creepSay('empty')
             this.changeStatus(1)
         } else if (store.energy == store.getCapacity()) {
-            creep.say('full')
+            this.creepSay('full')
             this.changeStatus(2)
         } else {
-            creep.say(store.energy + '/' + store.getCapacity())
+            this.creepSay(store.energy + '/' + store.getCapacity())
         }
 
         if (this.status == 1){
@@ -131,7 +138,7 @@ class CreepUpgrader extends CreepRole {
                 return
             }
         }
-        creep.say("error")
+        this.creepSay("error")
     }
 
 
@@ -165,13 +172,13 @@ class CreepRepair extends CreepRole {
         }
 
         if(store.energy == 0){
-            creep.say('empty')
+            this.creepSay('empty')
             this.changeStatus(1)
         } else if (store.energy == store.getCapacity()) {
-            creep.say('full')
+            this.creepSay('full')
             this.changeStatus(2)
         } else {
-            creep.say(store.energy + '/' + store.getCapacity())
+            this.creepSay(store.energy + '/' + store.getCapacity())
         }
 
 
@@ -351,13 +358,13 @@ class CreepMover extends CreepRole {
         }
 
         if(store.energy == 0){
-            creep.say('empty')
+            this.creepSay('empty')
             this.changeStatus(1)
         } else if (store.energy == store.getCapacity()) {
-            creep.say('full')
+            this.creepSay('full')
             this.changeStatus(2)
         } else {
-            creep.say(store.energy + '/' + store.getCapacity())
+            this.creepSay(store.energy + '/' + store.getCapacity())
         }
 
 
